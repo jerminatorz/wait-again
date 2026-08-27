@@ -7,8 +7,7 @@
   },
   "scripts": {
     "dev": "vinext dev",
-    "collect:zhuhai": "node scripts/collect-zhuhai.mjs",
-    "build": "npm run collect:zhuhai && vinext build",
+    "build": "vinext build",
     "start": "vinext start",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next"
   },

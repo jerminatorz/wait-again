@@ -1,74 +1,32 @@
 'use client';
+import { useState } from 'react';
 
-import { useMemo, useState } from 'react';
-import zhuhaiDiscovery from '../data/zhuhai-discovery.json';
-
-type Concert = {
-  id: number; day: string; month: string; weekday: string; time: string; city: string;
-  venue: string; title: string; artists: string; program: { composer: string; work: string }[];
-  price: string; color: string; source: string; url: string; verifiedAt: string;
-};
-
-const verifiedConcerts: Concert[] = [
-  { id: 1, day: '05', month: '九月', weekday: '周六', time: '20:00', city: '澳门', venue: '澳门文化中心综合剧院', title: '澳门乐团乐季开幕：永恒贝多芬', artists: '廖国敏 指挥 · 陆逸轩 钢琴 · 澳门乐团', price: 'MOP 180 起', color: '#7b8370', source: '澳门文化中心', url: 'https://www.ccm.gov.mo/gb/othershow/75947', verifiedAt: '2026-08-27', program: [{ composer: '杜卡', work: '《仙女》号曲' }, { composer: '萧邦', work: 'E小调第一钢琴协奏曲，作品11' }, { composer: '贝多芬', work: 'A大调第七交响曲，作品92' }] },
-  { id: 2, day: '09', month: '九月', weekday: '周三', time: '19:30', city: '香港', venue: '香港文化中心音乐厅', title: '成都巡演前音乐会：陆逸轩的萧邦', artists: '廖国敏 指挥 · 陆逸轩 钢琴 · 香港管弦乐团', price: 'HK$260 起', color: '#e7a868', source: '香港管弦乐团', url: 'https://www.hkphil.org/tc/concert/2026-27-season', verifiedAt: '2026-08-27', program: [{ composer: '姚晨', work: '《团团转》（世界首演）' }, { composer: '萧邦', work: 'E小调第一钢琴协奏曲，作品11' }, { composer: '斯特拉文斯基', work: '《火鸟》组曲（1919）' }] },
-  { id: 3, day: '11', month: '九月', weekday: '周五', time: '20:00', city: '广州', venue: '星海音乐厅交响乐演奏大厅', title: '广州交响乐团2026/27乐季开幕音乐会', artists: '黄屹 指挥 · 王健 大提琴 · 广州交响乐团', price: '¥80 起', color: '#9a7893', source: '广州交响乐团', url: 'https://www.gso.org.cn/en/portfolio/concert-2026-09-11/index.html', verifiedAt: '2026-08-27', program: [{ composer: '柴可夫斯基', work: '《弗兰切斯卡·达·里米尼》，作品32' }, { composer: '柴可夫斯基', work: '洛可可主题变奏曲，作品33' }, { composer: '柴可夫斯基', work: 'E小调第五交响曲，作品64' }] },
-  { id: 4, day: '16', month: '九月', weekday: '周三', time: '19:30', city: '香港', venue: '香港文化中心音乐厅', title: '乐季揭幕：汉力克的田园与深宫情仇', artists: '汉力克 指挥 · 香港管弦乐团', price: 'HK$340 起', color: '#718aa2', source: '香港管弦乐团', url: 'https://www.hkphil.org/tc/concert/2026-27-season', verifiedAt: '2026-08-27', program: [{ composer: '贝多芬', work: 'F大调第六交响曲「田园」，作品68' }, { composer: '理查·施特劳斯', work: '《深宫情仇》组曲' }] },
-  { id: 5, day: '19', month: '九月', weekday: '周六', time: '19:30', city: '深圳', venue: '深圳音乐厅五楼小剧场', title: '在水一方——肖玛中外艺术歌曲音乐会', artists: '肖玛 高男高音 · 马可·贝雷依 钢琴', price: '¥80 起', color: '#b4775e', source: '深圳音乐厅', url: 'https://szyyt.com/performance/show_100000956977894.html', verifiedAt: '2026-08-27', program: [{ composer: '亨德尔', work: '《我的爱，你在哪里？》' }, { composer: '黄自', work: '《玫瑰三愿》' }, { composer: '赵季平', work: '《幽兰操》' }] },
-  { id: 6, day: '24', month: '九月', weekday: '周四', time: '19:30', city: '香港', venue: '香港文化中心音乐厅', title: '国庆音乐会：王紫桐的普罗科菲耶夫', artists: '袁丁 指挥 · 王紫桐 钢琴 · 香港管弦乐团', price: 'HK$220 起', color: '#788b78', source: '香港管弦乐团', url: 'https://www.hkphil.org/tc/concert/national-day-concert-zitong-wang-plays-prokofiev', verifiedAt: '2026-08-27', program: [{ composer: '姚晨', work: '《造园》' }, { composer: '普罗科菲耶夫', work: 'C大调第三钢琴协奏曲，作品26' }, { composer: '拉赫玛尼诺夫', work: 'D小调第一交响曲，作品13' }] },
-  { id: 7, day: '30', month: '九月', weekday: '周三', time: '20:00', city: '广州', venue: '星海音乐厅交响乐演奏大厅', title: '纪念莫扎特诞辰270周年音乐会', artists: '杨洋 指挥 · 广州交响乐团', price: '¥80 起', color: '#8f745d', source: '广州交响乐团', url: 'https://www.gso.org.cn/portfolio/concert-2026-09-30/index.html', verifiedAt: '2026-08-27', program: [{ composer: '莫扎特', work: '歌剧《女人心》序曲，K.588' }, { composer: '莫扎特', work: '降E大调交响协奏曲，K.297b' }, { composer: '莫扎特', work: 'C大调第四十一交响曲「朱庇特」，K.551' }] },
-  { id: 8, day: '27', month: '十一月', weekday: '周五', time: '20:00', city: '深圳', venue: '深圳音乐厅演奏大厅', title: '深圳交响乐团：海之交响', artists: '张诚杰 指挥 · 深圳交响乐团', price: '¥80 起', color: '#668496', source: '深圳音乐厅', url: 'https://szyyt.com/performance/show_100000988433573.html', verifiedAt: '2026-08-27', program: [{ composer: '艾尔玛·兰普森', work: '《海之交响 I–III》' }, { composer: '德彪西', work: '《大海》' }] },
+type Match = { id:number; date:string; year:string; city:string; venue:string; title:string; pianist:string; conductor:string; orchestra:string; work:string; opus:string; price:string; url:string; source:string; checked:string };
+const matches: Match[] = [
+  { id:1,date:'10月22日 · 周四 19:30',year:'2026',city:'上海',venue:'东方艺术中心 · 音乐厅',title:'帕沃·雅尔维、康托洛夫与爱沙尼亚节日管弦乐团',pianist:'亚历山大·康托洛夫',conductor:'帕沃·雅尔维',orchestra:'爱沙尼亚节日管弦乐团',work:'C小调第二钢琴协奏曲',opus:'Op. 18',price:'¥180–880',url:'https://shanghaiconcerts.com/concerts/jarvi-kantorow-estonian-festival-orchestra',source:'东方音乐厅演出资料',checked:'2026-08-28' },
+  { id:2,date:'3月26日 · 周五 20:00',year:'2027',city:'深圳',venue:'深圳音乐厅 · 演奏大厅',title:'深圳交响乐团2026–2027乐季：三生万物',pianist:'沈璐',conductor:'张国勇',orchestra:'深圳交响乐团',work:'D小调第三钢琴协奏曲',opus:'Op. 30',price:'¥80–880',url:'https://szyyt.com/performance/show_100000991964858.html',source:'深圳音乐厅',checked:'2026-08-28' },
 ];
-const concerts: Concert[] = [...verifiedConcerts, ...(zhuhaiDiscovery.publicEvents as Concert[])];
+const watchlist = [
+  {no:'01',name:'升F小调第一钢琴协奏曲',opus:'Op. 1',status:'等待中'},
+  {no:'02',name:'C小调第二钢琴协奏曲',opus:'Op. 18',status:'已找到 1 场'},
+  {no:'03',name:'D小调第三钢琴协奏曲',opus:'Op. 30',status:'已找到 1 场'},
+  {no:'04',name:'G小调第四钢琴协奏曲',opus:'Op. 40',status:'等待中'},
+  {no:'∞',name:'帕格尼尼主题狂想曲',opus:'Op. 43',status:'等待中'},
+];
 
-const cities = ['全部城市', '香港', '澳门', '广州', '深圳', '珠海'];
-
-export default function Home() {
-  const [city, setCity] = useState('全部城市');
-  const [query, setQuery] = useState('');
-  const [active, setActive] = useState<number | null>(null);
-  const results = useMemo(() => concerts.filter((concert) => {
-    const cityMatch = city === '全部城市' || concert.city === city;
-    const haystack = [concert.title, concert.venue, concert.artists, ...concert.program.flatMap((p) => [p.composer, p.work])].join(' ').toLowerCase();
-    return cityMatch && haystack.includes(query.trim().toLowerCase());
-  }), [city, query]);
-
-  return (
-    <main>
-      <header className="topbar">
-        <a className="brand" href="#top" aria-label="乐巡首页"><span className="brand-mark">乐</span><span>乐巡</span></a>
-        <nav aria-label="主导航"><a className="active" href="#concerts">发现音乐会</a><a href="#sources">数据来源</a></nav>
-        <button className="location-button" onClick={() => setCity('珠海')}><span>⌖</span> 大湾区</button>
-      </header>
-      <section className="hero" id="top">
-        <div className="eyebrow"><span /> 大湾区古典音乐现场指南</div>
-        <h1>循着喜欢的作品，<br />找到下一场<span>现场。</span></h1>
-        <p>按作曲家或曲目，探索香港、澳门、广州、深圳与珠海的近期古典音乐会。</p>
-        <div className="search-panel" role="search">
-          <label className="search-field"><span className="search-icon">⌕</span><span className="field-copy"><small>作曲家或曲目</small><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="试试：拉赫玛尼诺夫、第五交响曲…" /></span></label>
-          <label className="city-field"><small>城市</small><select value={city} onChange={(e) => setCity(e.target.value)}>{cities.map((item) => <option key={item}>{item}</option>)}</select></label>
-          <button className="search-button" onClick={() => document.getElementById('concerts')?.scrollIntoView({ behavior: 'smooth' })}>寻找音乐会 <span>→</span></button>
-        </div>
-        <div className="quick"><span>热门搜索</span>{['贝多芬', '拉赫玛尼诺夫', '马勒', '大提琴协奏曲'].map((term) => <button key={term} onClick={() => setQuery(term)}>{term}</button>)}</div>
-      </section>
-      <section className="results" id="concerts">
-        <div className="section-heading"><div><span className="kicker">UPCOMING CONCERTS</span><h2>近期值得听</h2></div><p>共找到 <strong>{results.length}</strong> 场音乐会</p></div>
-        <div className="city-tabs" aria-label="按城市筛选">{cities.map((item) => <button className={city === item ? 'selected' : ''} key={item} onClick={() => setCity(item)}>{item}</button>)}</div>
-        <div className="concert-list">
-          {results.map((concert) => (
-            <article className="concert-card" key={concert.id}>
-              <div className="date"><strong>{concert.day}</strong><span>{concert.month} · {concert.weekday}</span><small>{concert.time}</small></div>
-              <div className="poster" style={{ background: `linear-gradient(145deg, ${concert.color}, #282624)` }}><span>{(concert.program[0]?.composer ?? concert.title).slice(0, 1)}</span><small>{concert.city}</small></div>
-              <div className="concert-main"><div className="meta"><span>{concert.city}</span><span>{concert.venue}</span></div><h3>{concert.title}</h3><p className="artists">{concert.artists}</p>{concert.program.length ? <div className="program">{concert.program.map((piece) => <p key={piece.work}><strong>{piece.composer}</strong><span>{piece.work}</span></p>)}</div> : <p className="program-pending">节目单待公布 · 暂不参与作曲家或作品匹配</p>}</div>
-              <div className="card-action"><span>{concert.price}</span><a href={concert.url} target="_blank" rel="noreferrer">官方详情 <i>↗</i></a><button className="text-button" onClick={() => setActive(active === concert.id ? null : concert.id)}>{active === concert.id ? '收起说明' : '数据说明'}</button><small>来源：{concert.source}</small></div>
-              {active === concert.id && <div className="detail-note"><strong>已核实</strong> {concert.verifiedAt} 查阅主办方页面。曲目、票价及阵容仍可能调整，请以官方页面为准。</div>}
-            </article>
-          ))}
-          {results.length === 0 && <div className="empty"><strong>暂时没有匹配的音乐会</strong><p>换一个作曲家、作品名或城市试试。</p><button onClick={() => { setQuery(''); setCity('全部城市'); }}>清除筛选</button></div>}
-        </div>
-      </section>
-      <section className="source-note" id="sources"><span>数据状态</span><div><h2>{concerts.length} 场节目已发现</h2><p>香港、澳门、广州和深圳节目已核实曲目；珠海大剧院现已自动抓取有明确日期的官方官微排期。华发中演发现 {zhuhaiDiscovery.reviewQueue.length} 场音乐会等待补充日期和节目单，补全前不会参与曲目匹配。</p><div className="source-tags"><span>香港 · 已收录</span><span>澳门 · 已收录</span><span>广州 · 已收录</span><span>深圳 · 已收录</span><span className="watching">珠海 · 自动监测</span></div></div></section>
-      <footer><a className="brand" href="#top"><span className="brand-mark">乐</span><span>乐巡</span></a><p>在城市之间，遇见下一段音乐。</p><small>演出信息请以主办方最终公布为准</small></footer>
-    </main>
-  );
+export default function Home(){
+  const [region,setRegion]=useState('全部地区');
+  const visible=region==='全部地区'?matches:matches.filter(item=>item.city===region);
+  return <main>
+    <header className="topbar"><a className="brand" href="#top"><span className="brand-dot"/>再等一次</a><nav><a href="#next">下一次</a><a href="#watch">守候曲目</a><a href="#memory">缘起</a></nav><span className="live-mark"><i/> 持续寻找中</span></header>
+    <section className="hero" id="top"><div className="hero-copy"><p className="overline">FOR THE CONCERT WE MISSED</p><h1>有些现场错过了，<br/>就<span>再等一次。</span></h1><p className="intro">这里只寻找拉赫玛尼诺夫的四首钢琴协奏曲，和《帕格尼尼主题狂想曲》。不推荐相似作品，不用遗憾制造热闹，只等它们再次出现。</p><a className="primary-link" href="#next">看见下一次 <span>↓</span></a></div><div className="vinyl" aria-hidden="true"><div className="vinyl-ring"><span>R</span></div></div><div className="quote">“音乐足够漫长，<br/>可以替我们记住。”</div></section>
+    <section className="memory-strip" id="memory"><div className="memory-year">2025</div><div className="memory-copy"><span>没有赶上的那一场</span><strong>张昊辰 × 香港管弦乐团 · 深圳</strong><p>第一钢琴协奏曲 · 帕格尼尼主题狂想曲 · 第二钢琴协奏曲<br/>第三钢琴协奏曲 · 第四钢琴协奏曲</p></div><div className="memory-note">错过不是句号<br/>它只是这次寻找的开始</div></section>
+    <section className="next-section" id="next"><div className="section-head"><div><p className="overline">THE NEXT CHANCES</p><h2>已经等到的两次</h2></div><label>地区<select value={region} onChange={e=>setRegion(e.target.value)}><option>全部地区</option><option>上海</option><option>深圳</option></select></label></div><div className="match-list">
+      {visible.map((match,index)=><article className="match-card" key={match.id}><div className="match-index">0{index+1}</div><div className="match-date"><strong>{match.year}</strong><span>{match.date}</span><small>{match.city}</small></div><div className="match-body"><div className="found-badge"><i/> 匹配曲目</div><h3>{match.work}</h3><div className="opus">{match.opus}</div><p className="event-title">{match.title}</p><div className="people"><span><small>钢琴</small>{match.pianist}</span><span><small>指挥</small>{match.conductor}</span><span><small>乐团</small>{match.orchestra}</span></div><p className="venue">⌖ {match.venue}</p></div><div className="match-action"><span>{match.price}</span><a href={match.url} target="_blank" rel="noreferrer">查看官方信息 ↗</a><small>{match.source}<br/>核实于 {match.checked}</small></div></article>)}
+      {!visible.length&&<div className="empty-state">这个地区还没有等到。我们继续找。</div>}
+    </div></section>
+    <section className="watch-section" id="watch"><div className="watch-intro"><p className="overline">THE FIVE WE KEEP</p><h2>只守候这五部作品</h2><p>搜索范围以中国内地、香港和澳门为主。曲目写法、繁简体、英文名和作品编号都会归到同一个答案里。</p></div><div className="watch-list">{watchlist.map(item=><div className="watch-row" key={item.opus}><span className="watch-no">{item.no}</span><strong>{item.name}</strong><em>{item.opus}</em><small className={item.status.includes('已找到')?'found':''}>{item.status}</small></div>)}</div></section>
+    <section className="promise"><p className="overline">A QUIET PROMISE</p><h2>下一次，不让工作替你做决定。</h2><p>页面只刊登能够核实日期、场馆和目标曲目的演出。阵容或节目变化时，以主办方最后公布为准。</p></section>
+    <footer><a className="brand" href="#top"><span className="brand-dot"/>再等一次</a><p>For Rachmaninoff, and for the night that got away.</p><small>中国内地 · 香港 · 澳门</small></footer>
+  </main>
 }
